@@ -5,8 +5,16 @@
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
   <img src="https://img.shields.io/badge/react-18.x-61dafb.svg" alt="React 18+">
   <img src="https://img.shields.io/badge/typescript-5.x-3178c6.svg" alt="TypeScript 5+">
-  <br /><br />
-  <img src="./assets/preview.png" alt="OAuth Consent Screen Preview" width="600">
+</div>
+
+<div align="center">
+  <img src="./assets/dark-mode.jpg" alt="OAuth Consent Screen - Dark Mode" width="260">
+  <img src="./assets/advanced-config.jpg" alt="OAuth Consent Screen - Advanced Config" width="260">
+  <img src="./assets/light-mode.jpg" alt="OAuth Consent Screen - Light Mode" width="260">
+</div>
+
+<div align="center">
+  <em>The OAuth Consent Screen component in dark mode, advanced configuration, and light mode</em>
 </div>
 
 <br />

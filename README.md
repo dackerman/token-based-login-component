@@ -8,7 +8,12 @@
 </div>
 
 <p align="center">
-  <img src="docs/screenshots/demo.png" alt="OAuth Consent Screen Demo" width="600">
+  <img src="docs/screenshots/dark-mode.jpg" alt="OAuth Consent Screen - Dark Mode" width="300">
+  <img src="docs/screenshots/light-mode.jpg" alt="OAuth Consent Screen - Light Mode" width="300">
+</p>
+
+<p align="center">
+  <em>The OAuth Consent Screen component in dark and light modes</em>
 </p>
 
 ## Project Overview
@@ -24,6 +29,48 @@ This project contains a fully customizable OAuth-style consent screen component 
 - **Advanced settings panel** - Configure regions, API versions, and timeouts
 - **Responsive design** - Looks great on all devices
 - **Built with Shadcn UI** - Beautiful, consistent design using Shadcn UI components
+
+### Highlighted Features
+
+#### 1. API Key Instructions
+
+<p align="center">
+  <img src="docs/screenshots/advanced-config.jpg" alt="API Key Instructions Feature" width="300">
+</p>
+
+The **API Key Instructions panel** provides users with clear, step-by-step guidance on how to obtain their API keys. This panel:
+
+- Can be fully customized with your specific instructions
+- Supports clickable links to your documentation or portal
+- Includes additional information about token security
+- Helps reduce user confusion and support requests
+
+#### 2. Theme Toggle
+
+<p align="center">
+  <img src="docs/screenshots/dark-mode.jpg" alt="Dark Mode" width="250">
+  <img src="docs/screenshots/light-mode.jpg" alt="Light Mode" width="250">
+</p>
+
+The component includes a built-in **theme toggle** that allows users to switch between dark and light modes. The theme toggle:
+
+- Detects system preference automatically
+- Persists user preference in local storage
+- Applies consistent styling across the entire component
+- Can be enabled or disabled through configuration
+
+#### 3. Advanced Configuration
+
+<p align="center">
+  <img src="docs/screenshots/advanced-config.jpg" alt="Advanced Configuration" width="300">
+</p>
+
+The **Advanced Configuration** section provides additional options for users who need more control:
+
+- Region selection with customizable options
+- API version specification
+- Request timeout configuration
+- Collapsible interface to reduce visual complexity
 
 ## Quick Demo
 
