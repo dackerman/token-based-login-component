@@ -1,30 +1,42 @@
-# OAuth Consent Screen Component
+<div align="center">
+  <h1>OAuth Consent Screen</h1>
+  <p>A beautiful, customizable OAuth-style consent screen with API token input and branding options</p>
+  <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
+  <img src="https://img.shields.io/badge/react-18.x-61dafb.svg" alt="React 18+">
+  <img src="https://img.shields.io/badge/typescript-5.x-3178c6.svg" alt="TypeScript 5+">
+  <br /><br />
+  <img src="./assets/preview.png" alt="OAuth Consent Screen Preview" width="600">
+</div>
 
-A customizable React component that provides an OAuth-style consent screen with configurable branding, fields, and behavior.
+<br />
 
-## Features
+## ✨ Features
 
-- Fully customizable branding (company name, logo, colors, descriptions)
-- Light/dark mode with system preference detection
-- API token input with toggleable visibility
-- Configurable advanced settings (regions, API version, timeout)
-- Step-by-step API key instructions with links
-- Responsive design
-- Customizable styles and appearance
-- Form validation and error handling
-- Event hooks for form submission and cancellation
+- **Fully Customizable**: Configure your branding, colors, text, and behavior easily
+- **Dark Mode Support**: Built-in light/dark theme with system preference detection
+- **API Key Instructions**: Show step-by-step instructions for obtaining API keys
+- **Advanced Settings**: Configurable fields for region, API version, and timeouts
+- **Form Validation**: Validates inputs with customizable error messages
+- **Responsive Design**: Looks great on all screen sizes
+- **TypeScript Support**: Fully typed for better developer experience
+- **Shadcn UI Components**: Beautiful design using Shadcn UI components
+- **Tailwind CSS**: Styled with Tailwind CSS for easy customization
 
-## Installation
+## 📦 Installation
 
 ```bash
-# Assuming you're using npm
+# Using npm
 npm install oauth-consent-screen
 
-# Or using yarn
+# Using yarn
 yarn add oauth-consent-screen
+
+# Using pnpm
+pnpm add oauth-consent-screen
 ```
 
-## Basic Usage
+## 🚀 Quick Start
 
 ```jsx
 import { ConsentScreen } from 'oauth-consent-screen';
@@ -34,8 +46,129 @@ function App() {
     <ConsentScreen 
       config={{
         branding: {
-          companyName: "My Company",
-          serviceDescription: "Connect to our API"
+          companyName: "My API",
+          serviceDescription: "Connect to our API service"
+        },
+        onSubmit: (data) => {
+          console.log("Token submitted:", data.apiToken);
+          // Handle authentication
+        }
+      }}
+    />
+  );
+}
+
+export default App;
+```
+
+## 📖 Documentation
+
+### Basic Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `config` | `ConsentScreenConfig` | Main configuration object |
+| `showDemoControls` | `boolean` | Optional. Shows demo configuration toggle for demonstration |
+
+### Configuration Object
+
+The `config` prop expects a `ConsentScreenConfig` object with the following properties:
+
+```typescript
+type ConsentScreenConfig = {
+  branding: BrandingConfig;
+  apiTokenLabel?: string;
+  apiTokenPlaceholder?: string;
+  advancedConfigLabel?: string;
+  showAdvancedByDefault?: boolean;
+  regions?: RegionOption[];
+  enableThemeToggle?: boolean;
+  defaultTheme?: 'light' | 'dark' | 'system';
+  submitButtonText?: string;
+  cancelButtonText?: string;
+  defaultApiVersion?: string;
+  defaultTimeout?: number;
+  showRegionSelector?: boolean;
+  showApiVersionField?: boolean;
+  showTimeoutField?: boolean;
+  apiKeyInstructions?: ApiKeyInstructionConfig;
+  customStyles?: {
+    cardWidth?: string;
+    borderRadius?: string;
+    shadowIntensity?: 'light' | 'medium' | 'heavy';
+  };
+  onSubmit?: (data: ConsentFormData) => void;
+  onCancel?: () => void;
+};
+```
+
+### Branding Configuration
+
+```typescript
+type BrandingConfig = {
+  companyName: string;
+  companyLogo?: string | React.ReactNode;
+  serviceDescription: string;
+  serviceProvider?: string;
+  primaryColor?: string;
+  backgroundColor?: string;
+  headerBackground?: string;
+};
+```
+
+### API Key Instructions
+
+```typescript
+type ApiKeyInstructionConfig = {
+  show: boolean;
+  title?: string;
+  steps?: Array<{
+    text: string;
+    url?: string;
+  }>;
+  additionalInfo?: string;
+};
+```
+
+### Form Data
+
+The `onSubmit` callback receives a `ConsentFormData` object:
+
+```typescript
+type ConsentFormData = {
+  apiToken: string;
+  region?: string;
+  apiVersion?: string;
+  timeout?: number;
+};
+```
+
+## 💡 Usage Examples
+
+### 1. Basic Example with Custom Branding
+
+```jsx
+import { ConsentScreen } from 'oauth-consent-screen';
+
+function AuthScreen() {
+  return (
+    <ConsentScreen 
+      config={{
+        branding: {
+          companyName: "CloudAPI",
+          serviceDescription: "Connect your application to our cloud services",
+          primaryColor: "#0070f3", // Custom blue color
+          companyLogo: "https://your-company.com/logo.png"
+        },
+        submitButtonText: "Connect",
+        cancelButtonText: "Go Back",
+        onSubmit: (data) => {
+          console.log("API token received:", data.apiToken);
+          // Handle authentication logic
+        },
+        onCancel: () => {
+          console.log("Authentication cancelled");
+          // Handle cancellation
         }
       }}
     />
@@ -43,72 +176,90 @@ function App() {
 }
 ```
 
-## Advanced Usage
+### 2. Advanced Configuration with API Key Instructions
 
 ```jsx
-import { ConsentScreen, ConsentFormData } from 'oauth-consent-screen';
+import { ConsentScreen } from 'oauth-consent-screen';
 
-function App() {
-  // Handle form submission
-  const handleSubmit = (data: ConsentFormData) => {
-    console.log('Form submitted with:', data);
-    // Send data to your backend API
-    fetch('/api/authorize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-  };
-
-  // Handle cancellation
-  const handleCancel = () => {
-    console.log('Authorization canceled');
-    // Redirect user or show a different screen
-  };
-
+function FullFeaturedAuthScreen() {
   return (
     <ConsentScreen 
       config={{
         branding: {
-          companyName: "API Gateway",
-          serviceDescription: "Connect your application to our API services",
-          serviceProvider: "My API Provider",
-          primaryColor: "#0070f3",
-          backgroundColor: "#f5f5f5",
-          headerBackground: "#f0f7ff"
+          companyName: "Developer API",
+          serviceDescription: "Access the Developer API tools",
+          serviceProvider: "DevTools Inc.",
+          primaryColor: "#6d28d9"
         },
-        apiTokenLabel: "Access Key",
-        apiTokenPlaceholder: "Paste your developer access key",
-        advancedConfigLabel: "Connection Settings",
-        showAdvancedByDefault: false,
+        apiTokenLabel: "Developer Token",
+        apiTokenPlaceholder: "Paste your developer token here",
+        advancedConfigLabel: "API Settings",
+        showAdvancedByDefault: true,
         regions: [
-          { value: "us-east", label: "US East" },
-          { value: "eu-west", label: "EU West" }
+          { value: "us", label: "United States" },
+          { value: "eu", label: "Europe" },
+          { value: "asia", label: "Asia Pacific" }
         ],
         enableThemeToggle: true,
         defaultTheme: 'system',
-        submitButtonText: "Connect",
-        cancelButtonText: "Cancel",
-        showRegionSelector: true,
-        showApiVersionField: true,
-        showTimeoutField: true,
+        defaultApiVersion: "v2.1",
+        defaultTimeout: 60,
         apiKeyInstructions: {
           show: true,
-          title: "How to get your Access Key",
+          title: "How to get your Developer Token",
           steps: [
             {
               text: "Log in to the Developer Portal",
-              url: "https://developer.example.com/login"
+              url: "https://developers.example.com/login"
             },
-            { text: "Navigate to 'API Keys' under your account" },
-            { text: "Click 'Generate New Key'" }
+            { text: "Go to 'API Access' in your account settings" },
+            { text: "Click 'Generate New Token'" },
+            { text: "Copy the token and paste it here" }
           ],
-          additionalInfo: "Your key will only be shown once. Store it securely."
+          additionalInfo: "Your token is sensitive. Never share it in public places."
         },
         customStyles: {
           cardWidth: "max-w-lg",
-          borderRadius: "rounded-2xl",
+          borderRadius: "rounded-xl",
           shadowIntensity: 'heavy'
+        },
+        onSubmit: (data) => {
+          console.log("Form data:", data);
+          // Process authentication
+        }
+      }}
+    />
+  );
+}
+```
+
+### 3. Using with React Router
+
+```jsx
+import { useNavigate } from 'react-router-dom';
+import { ConsentScreen } from 'oauth-consent-screen';
+
+function AuthWithRouter() {
+  const navigate = useNavigate();
+  
+  const handleSubmit = (data) => {
+    // Store the token
+    localStorage.setItem("api_token", data.apiToken);
+    // Redirect to dashboard
+    navigate('/dashboard');
+  };
+  
+  const handleCancel = () => {
+    // Redirect to home
+    navigate('/');
+  };
+  
+  return (
+    <ConsentScreen 
+      config={{
+        branding: {
+          companyName: "RouterApp",
+          serviceDescription: "Authorize API access"
         },
         onSubmit: handleSubmit,
         onCancel: handleCancel
@@ -118,64 +269,48 @@ function App() {
 }
 ```
 
-## Configuration Options
+## 🧩 Dependencies
 
-### BrandingConfig
+This component uses [Shadcn UI](https://ui.shadcn.com/) components and [Tailwind CSS](https://tailwindcss.com/). Please see `shadcn-dependencies.md` for information on how to set up the required components in your project.
 
-| Property | Type | Description |
-|----------|------|-------------|
-| companyName | string | The name of the company or service |
-| companyLogo | string \| React.ReactNode | URL to logo image or a React component |
-| serviceDescription | string | Description of the service requesting access |
-| serviceProvider | string | Optional name of the service provider |
-| primaryColor | string | Primary color (hex code) for branding elements |
-| backgroundColor | string | Background color for the page |
-| headerBackground | string | Background color for the header section |
+## 🛠️ Development
 
-### ApiKeyInstructionConfig
+Want to contribute to this component? Here's how to set up the development environment:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| show | boolean | Whether to show the API key instructions |
-| title | string | Title for the instructions section |
-| steps | Array<{text: string, url?: string}> | Step-by-step instructions, with optional URLs |
-| additionalInfo | string | Additional information text |
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/oauth-consent-screen.git
+   cd oauth-consent-screen
+   ```
 
-### ConsentScreenConfig
+2. Install dependencies
+   ```bash
+   npm install
+   ```
 
-| Property | Type | Description |
-|----------|------|-------------|
-| branding | BrandingConfig | Branding configuration object |
-| apiTokenLabel | string | Label for the API token input |
-| apiTokenPlaceholder | string | Placeholder text for the API token input |
-| advancedConfigLabel | string | Label for the advanced configuration section |
-| showAdvancedByDefault | boolean | Whether to expand advanced settings by default |
-| regions | RegionOption[] | Array of available regions |
-| enableThemeToggle | boolean | Whether to show the theme toggle |
-| defaultTheme | 'light' \| 'dark' \| 'system' | Default theme setting |
-| submitButtonText | string | Text for the submit button |
-| cancelButtonText | string | Text for the cancel button |
-| defaultApiVersion | string | Default API version value |
-| defaultTimeout | number | Default timeout value in seconds |
-| showRegionSelector | boolean | Whether to show the region selector |
-| showApiVersionField | boolean | Whether to show the API version field |
-| showTimeoutField | boolean | Whether to show the timeout field |
-| apiKeyInstructions | ApiKeyInstructionConfig | Configuration for API key instructions |
-| customStyles | object | Custom styling options |
-| onSubmit | (data: ConsentFormData) => void | Callback function when form is submitted |
-| onCancel | () => void | Callback function when form is canceled |
+3. Run the development server
+   ```bash
+   npm run dev
+   ```
 
-## Form Data
+4. Build the package
+   ```bash
+   npm run build
+   ```
 
-The `onSubmit` callback receives a `ConsentFormData` object with the following properties:
+## 📋 Requirements
 
-| Property | Type | Description |
-|----------|------|-------------|
-| apiToken | string | The API token value entered by the user |
-| region | string | The selected region (if enabled) |
-| apiVersion | string | The API version (if enabled) |
-| timeout | number | The timeout value in seconds (if enabled) |
+- React 18 or higher
+- TypeScript 5 or higher
+- Tailwind CSS 3 or higher
+- The appropriate Shadcn UI components
 
-## License
+## 📄 License
 
-MIT
+MIT © [Your Name]
+
+---
+
+<div align="center">
+  <p>Made with ❤️ for the developer community</p>
+</div>
