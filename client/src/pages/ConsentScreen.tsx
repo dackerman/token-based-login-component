@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -17,32 +16,127 @@ import {
   AlertCircle
 } from "lucide-react";
 
+// Define types for our configurable component
+type BrandingConfig = {
+  companyName: string;
+  companyLogo?: string | React.ReactNode;
+  serviceDescription: string;
+  serviceProvider?: string;
+  primaryColor?: string;
+  backgroundColor?: string;
+  headerBackground?: string;
+};
+
+type RegionOption = {
+  value: string;
+  label: string;
+};
+
+type ConsentScreenConfig = {
+  branding: BrandingConfig;
+  apiTokenLabel?: string;
+  apiTokenPlaceholder?: string;
+  advancedConfigLabel?: string;
+  showAdvancedByDefault?: boolean;
+  regions?: RegionOption[];
+  enableThemeToggle?: boolean;
+  defaultTheme?: 'light' | 'dark' | 'system';
+  submitButtonText?: string;
+  cancelButtonText?: string;
+  defaultApiVersion?: string;
+  defaultTimeout?: number;
+  showRegionSelector?: boolean;
+  showApiVersionField?: boolean;
+  showTimeoutField?: boolean;
+  customStyles?: {
+    cardWidth?: string;
+    borderRadius?: string;
+    shadowIntensity?: 'light' | 'medium' | 'heavy';
+  };
+};
+
+// Default configuration
+const defaultConfig: ConsentScreenConfig = {
+  branding: {
+    companyName: "Acme Inc",
+    serviceDescription: "Requesting API access to your account",
+    serviceProvider: "API Connect"
+  },
+  apiTokenLabel: "API Token",
+  apiTokenPlaceholder: "Enter your API token",
+  advancedConfigLabel: "Advanced Configuration",
+  showAdvancedByDefault: false,
+  regions: [
+    { value: "us-east-1", label: "US East (N. Virginia)" },
+    { value: "us-west-1", label: "US West (N. California)" },
+    { value: "eu-west-1", label: "EU (Ireland)" },
+    { value: "ap-southeast-1", label: "Asia Pacific (Singapore)" }
+  ],
+  enableThemeToggle: true,
+  defaultTheme: 'system',
+  submitButtonText: "Authorize",
+  cancelButtonText: "Cancel",
+  defaultApiVersion: "v2.0",
+  defaultTimeout: 30,
+  showRegionSelector: true,
+  showApiVersionField: true,
+  showTimeoutField: true,
+  customStyles: {
+    cardWidth: "max-w-md",
+    borderRadius: "rounded-xl",
+    shadowIntensity: 'medium'
+  }
+};
+
+// Demo configuration - in a real app this would come from props or API
+const demoConfig: ConsentScreenConfig = {
+  branding: {
+    companyName: "DevService",
+    serviceDescription: "Connect to your development environment",
+    serviceProvider: "Dev Connect",
+    primaryColor: "#4f46e5" // Indigo color
+  },
+  apiTokenLabel: "Access Key",
+  apiTokenPlaceholder: "Paste your developer access key",
+  showAdvancedByDefault: true,
+  regions: [
+    { value: "us-east", label: "US East" },
+    { value: "us-west", label: "US West" },
+    { value: "eu-central", label: "EU Central" },
+    { value: "asia-east", label: "Asia East" }
+  ],
+  enableThemeToggle: true,
+  defaultTheme: 'dark',
+  submitButtonText: "Connect",
+  cancelButtonText: "Decline",
+  showApiVersionField: true
+};
+
 export default function ConsentScreen() {
+  // For demo purposes, we'll toggle between configurations
+  const [useAltConfig, setUseAltConfig] = useState(false);
+  
+  // Merge the selected configuration with defaults
+  const config = useAltConfig 
+    ? { ...defaultConfig, ...demoConfig } 
+    : defaultConfig;
+  
   // State for theme
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">(
+    config.defaultTheme === 'dark' ? "dark" : "light"
+  );
   
   // State for form fields
   const [apiToken, setApiToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [region, setRegion] = useState("us-east-1");
-  const [apiVersion, setApiVersion] = useState("v2.0");
-  const [timeout, setTimeout] = useState(30);
-  
-  // State for permissions
-  const [permissions, setPermissions] = useState({
-    read: true,
-    write: true,
-    delete: false
-  });
-  
-  // State for terms agreement
-  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(config.showAdvancedByDefault || false);
+  const [region, setRegion] = useState(config.regions?.[0]?.value || "");
+  const [apiVersion, setApiVersion] = useState(config.defaultApiVersion || "");
+  const [timeout, setTimeout] = useState(config.defaultTimeout || 30);
   
   // State for form validation
   const [errors, setErrors] = useState({
-    apiToken: false,
-    termsAgreed: false
+    apiToken: false
   });
   
   // State for form submission
@@ -50,26 +144,31 @@ export default function ConsentScreen() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   
-  // State for branding (would be loaded from API or props in real app)
-  const [branding, setBranding] = useState({
-    companyName: "Acme Inc",
-    serviceDescription: "Requesting API access to your account",
-    serviceProvider: "API Connect"
-  });
-  
   // Theme toggling based on system preference by default
   useEffect(() => {
     // Check for saved theme or system preference
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark" || 
-      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
+    
+    if (config.defaultTheme === 'system') {
+      if (savedTheme === "dark" || 
+        (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        setTheme("dark");
+        document.documentElement.classList.add("dark");
+      } else {
+        setTheme("light");
+        document.documentElement.classList.remove("dark");
+      }
     } else {
-      setTheme("light");
-      document.documentElement.classList.remove("dark");
+      // Use the specified default theme
+      if (config.defaultTheme === 'dark') {
+        setTheme("dark");
+        document.documentElement.classList.add("dark");
+      } else {
+        setTheme("light");
+        document.documentElement.classList.remove("dark");
+      }
     }
-  }, []);
+  }, [config.defaultTheme]);
   
   // Handle theme toggle
   const toggleTheme = () => {
@@ -90,8 +189,7 @@ export default function ConsentScreen() {
   // Handle form validation
   const validateForm = () => {
     const newErrors = {
-      apiToken: !apiToken.trim(),
-      termsAgreed: !termsAgreed
+      apiToken: !apiToken.trim()
     };
     
     setErrors(newErrors);
@@ -134,78 +232,149 @@ export default function ConsentScreen() {
   // Reset form
   const resetForm = () => {
     setApiToken("");
-    setTermsAgreed(false);
     setStatus("idle");
     setErrors({
-      apiToken: false,
-      termsAgreed: false
+      apiToken: false
     });
   };
   
   // Handle cancel
   const handleCancel = () => {
     if (confirm("Are you sure you want to cancel the authorization?")) {
-      // In a real app, this would redirect back to the application
       resetForm();
     }
   };
   
-  // Toggle permission
-  const togglePermission = (permission: keyof typeof permissions) => {
-    setPermissions(prev => ({
-      ...prev,
-      [permission]: !prev[permission]
-    }));
+  // Calculate shadow class based on intensity
+  const getShadowClass = () => {
+    const intensity = config.customStyles?.shadowIntensity || 'medium';
+    switch (intensity) {
+      case 'light': return 'shadow-sm';
+      case 'heavy': return 'shadow-lg';
+      case 'medium':
+      default: return 'shadow-md';
+    }
+  };
+  
+  // Get primary color styles
+  const getPrimaryColorStyles = () => {
+    if (config.branding.primaryColor) {
+      return {
+        color: config.branding.primaryColor
+      };
+    }
+    return {};
+  };
+  
+  // Toggle between configuration examples (for demo purposes)
+  const toggleConfigExample = () => {
+    setUseAltConfig(!useAltConfig);
   };
   
   return (
-    <div className="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-200 min-h-screen font-sans transition-colors duration-300">
+    <div 
+      className="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-200 min-h-screen font-sans transition-colors duration-300"
+      style={config.branding.backgroundColor ? { backgroundColor: config.branding.backgroundColor } : {}}
+    >
       <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-screen">
         
-        {/* Theme Toggle */}
-        <div className="absolute top-4 right-4 md:top-8 md:right-8">
-          <label className="inline-flex items-center cursor-pointer">
-            <span className="mr-2 text-sm">
-              {theme === "light" ? (
-                <Sun className="text-slate-600" size={16} />
-              ) : (
-                <Moon className="text-slate-400" size={16} />
-              )}
-            </span>
-            <div className="relative inline-block">
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={theme === "dark"}
-                onChange={toggleTheme}
-              />
-              <div className={`w-11 h-6 rounded-full shadow-inner transition-colors ${
-                theme === "dark" ? "bg-slate-700" : "bg-slate-200"
-              }`}></div>
-              <div className={`absolute left-0.5 top-0.5 bg-white dark:bg-slate-200 w-5 h-5 rounded-full shadow transform transition-transform ${
-                theme === "dark" ? "translate-x-5" : ""
-              }`}></div>
-            </div>
-          </label>
+        {/* Demo controls - would be removed in production */}
+        <div className="absolute top-4 left-4 md:top-8 md:left-8 z-10">
+          <button
+            onClick={toggleConfigExample}
+            className="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+          >
+            {useAltConfig ? "Show Default Config" : "Show Alternate Config"}
+          </button>
         </div>
         
+        {/* Theme Toggle */}
+        {config.enableThemeToggle && (
+          <div className="absolute top-4 right-4 md:top-8 md:right-8">
+            <label className="inline-flex items-center cursor-pointer">
+              <span className="mr-2 text-sm">
+                {theme === "light" ? (
+                  <Sun className="text-slate-600" size={16} />
+                ) : (
+                  <Moon className="text-slate-400" size={16} />
+                )}
+              </span>
+              <div className="relative inline-block">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={theme === "dark"}
+                  onChange={toggleTheme}
+                />
+                <div className={`w-11 h-6 rounded-full shadow-inner transition-colors ${
+                  theme === "dark" ? "bg-slate-700" : "bg-slate-200"
+                }`}></div>
+                <div className={`absolute left-0.5 top-0.5 bg-white dark:bg-slate-200 w-5 h-5 rounded-full shadow transform transition-transform ${
+                  theme === "dark" ? "translate-x-5" : ""
+                }`}></div>
+              </div>
+            </label>
+          </div>
+        )}
+        
         {/* Auth Card */}
-        <Card className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-md p-6 md:p-8 transition-all duration-300">
+        <Card className={`w-full ${config.customStyles?.cardWidth || 'max-w-md'} bg-white dark:bg-slate-900 ${config.customStyles?.borderRadius || 'rounded-xl'} ${getShadowClass()} p-6 md:p-8 transition-all duration-300`}>
           <CardContent className="p-0">
             
             {/* Brand Header */}
-            <div className="flex flex-col items-center justify-center mb-6">
+            <div 
+              className="flex flex-col items-center justify-center mb-6 p-4 rounded-lg"
+              style={config.branding.headerBackground ? { backgroundColor: config.branding.headerBackground } : {}}
+            >
               <div className="w-20 h-20 mb-4 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                 {/* Company logo container */}
-                <ShieldAlert className="text-primary text-4xl" />
+                {typeof config.branding.companyLogo === 'string' ? (
+                  <img 
+                    src={config.branding.companyLogo} 
+                    alt={`${config.branding.companyName} logo`} 
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : config.branding.companyLogo ? (
+                  config.branding.companyLogo
+                ) : (
+                  <ShieldAlert 
+                    className="text-primary text-4xl" 
+                    style={getPrimaryColorStyles()}
+                  />
+                )}
               </div>
-              <h1 className="text-2xl font-bold text-center text-slate-900 dark:text-white">
-                {branding.companyName}
+              <h1 className="text-2xl font-bold text-center text-slate-900 dark:text-white"
+                  style={getPrimaryColorStyles()}>
+                {config.branding.companyName}
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-1">
-                {branding.serviceDescription}
+                {config.branding.serviceDescription}
               </p>
+              {config.branding.serviceProvider && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-1">
+                  Provided by {config.branding.serviceProvider}
+                </p>
+              )}
             </div>
+            
+            {/* Status Alerts */}
+            {status === "success" && (
+              <Alert className="mb-4 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                <AlertDescription>
+                  Authorization successful! Redirecting...
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {status === "error" && (
+              <Alert className="mb-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-900">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                <AlertDescription>
+                  {errorMessage}
+                </AlertDescription>
+              </Alert>
+            )}
             
             {/* Auth Form */}
             <form className="space-y-5" onSubmit={handleSubmit}>
@@ -213,7 +382,7 @@ export default function ConsentScreen() {
               {/* API Token Input */}
               <div className="space-y-2">
                 <Label htmlFor="api-token" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  API Token <span className="text-red-500">*</span>
+                  {config.apiTokenLabel || "API Token"} <span className="text-red-500">*</span>
                 </Label>
                 <div className={`form-control relative rounded-md shadow-sm border transition-all duration-200 ${
                   errors.apiToken ? "error border-red-500" : "border-slate-300 dark:border-slate-700"
@@ -222,7 +391,7 @@ export default function ConsentScreen() {
                     type={showPassword ? "text" : "password"}
                     id="api-token"
                     className="border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                    placeholder="Enter your API token"
+                    placeholder={config.apiTokenPlaceholder || "Enter your API token"}
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
                     required
@@ -251,11 +420,12 @@ export default function ConsentScreen() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Advanced Configuration
+                    {config.advancedConfigLabel || "Advanced Configuration"}
                   </h3>
                   <button
                     type="button"
-                    className="text-primary-600 dark:text-primary-400 text-sm focus:outline-none hover:text-primary-700 dark:hover:text-primary-300 flex items-center"
+                    className="text-primary hover:text-primary/80 text-sm focus:outline-none flex items-center"
+                    style={getPrimaryColorStyles()}
                     onClick={() => setShowAdvanced(!showAdvanced)}
                   >
                     <span>{showAdvanced ? "Hide" : "Show"}</span>
@@ -270,207 +440,94 @@ export default function ConsentScreen() {
                 {showAdvanced && (
                   <div className="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-4 mt-2">
                     {/* Region Selection */}
-                    <div className="space-y-2">
-                      <Label htmlFor="region" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Region
-                      </Label>
-                      <Select value={region} onValueChange={setRegion}>
-                        <SelectTrigger className="w-full rounded-md border border-slate-300 dark:border-slate-700">
-                          <SelectValue placeholder="Select a region" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="us-east-1">US East (N. Virginia)</SelectItem>
-                          <SelectItem value="us-west-1">US West (N. California)</SelectItem>
-                          <SelectItem value="eu-west-1">EU (Ireland)</SelectItem>
-                          <SelectItem value="ap-southeast-1">Asia Pacific (Singapore)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {config.showRegionSelector && config.regions && config.regions.length > 0 && (
+                      <div className="space-y-2">
+                        <Label htmlFor="region" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Region
+                        </Label>
+                        <Select value={region} onValueChange={setRegion}>
+                          <SelectTrigger className="w-full rounded-md border border-slate-300 dark:border-slate-700">
+                            <SelectValue placeholder="Select a region" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {config.regions.map(region => (
+                              <SelectItem key={region.value} value={region.value}>
+                                {region.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                     
                     {/* API Version */}
-                    <div className="space-y-2">
-                      <Label htmlFor="api-version" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        API Version
-                      </Label>
-                      <Input
-                        type="text"
-                        id="api-version"
-                        className="rounded-md border border-slate-300 dark:border-slate-700"
-                        placeholder="e.g., v2.1"
-                        value={apiVersion}
-                        onChange={(e) => setApiVersion(e.target.value)}
-                      />
-                    </div>
+                    {config.showApiVersionField && (
+                      <div className="space-y-2">
+                        <Label htmlFor="api-version" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          API Version
+                        </Label>
+                        <Input
+                          type="text"
+                          id="api-version"
+                          className="rounded-md border border-slate-300 dark:border-slate-700"
+                          placeholder="e.g., v2.1"
+                          value={apiVersion}
+                          onChange={(e) => setApiVersion(e.target.value)}
+                        />
+                      </div>
+                    )}
                     
                     {/* Timeout */}
-                    <div className="space-y-2">
-                      <Label htmlFor="timeout" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Request Timeout (seconds)
-                      </Label>
-                      <Input
-                        type="number"
-                        id="timeout"
-                        className="rounded-md border border-slate-300 dark:border-slate-700"
-                        min={1}
-                        max={60}
-                        value={timeout}
-                        onChange={(e) => setTimeout(parseInt(e.target.value) || 30)}
-                      />
-                    </div>
+                    {config.showTimeoutField && (
+                      <div className="space-y-2">
+                        <Label htmlFor="timeout" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Request Timeout (seconds)
+                        </Label>
+                        <Input
+                          type="number"
+                          id="timeout"
+                          className="rounded-md border border-slate-300 dark:border-slate-700"
+                          min={1}
+                          max={60}
+                          value={timeout}
+                          onChange={(e) => setTimeout(parseInt(e.target.value) || 30)}
+                        />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              
-              {/* Permissions and Consent */}
-              <div className="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-5">
-                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Application Permissions
-                </h3>
-                
-                {/* Permission Checkboxes */}
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <Checkbox
-                      id="permission-read"
-                      checked={permissions.read}
-                      onCheckedChange={() => togglePermission("read")}
-                      className="mt-1"
-                    />
-                    <div className="ml-3 text-sm">
-                      <Label
-                        htmlFor="permission-read"
-                        className="font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Read Access
-                      </Label>
-                      <p className="text-slate-500 dark:text-slate-400">View and read data from your account</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <Checkbox
-                      id="permission-write"
-                      checked={permissions.write}
-                      onCheckedChange={() => togglePermission("write")}
-                      className="mt-1"
-                    />
-                    <div className="ml-3 text-sm">
-                      <Label
-                        htmlFor="permission-write"
-                        className="font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Write Access
-                      </Label>
-                      <p className="text-slate-500 dark:text-slate-400">Create and modify data in your account</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <Checkbox
-                      id="permission-delete"
-                      checked={permissions.delete}
-                      onCheckedChange={() => togglePermission("delete")}
-                      className="mt-1"
-                    />
-                    <div className="ml-3 text-sm">
-                      <Label
-                        htmlFor="permission-delete"
-                        className="font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Delete Access
-                      </Label>
-                      <p className="text-slate-500 dark:text-slate-400">Remove data from your account</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Terms Agreement */}
-                <div className="flex items-start mt-6">
-                  <Checkbox
-                    id="terms-agreement"
-                    checked={termsAgreed}
-                    onCheckedChange={(checked) => setTermsAgreed(checked === true)}
-                    className="mt-1"
-                  />
-                  <div className="ml-3 text-sm">
-                    <Label
-                      htmlFor="terms-agreement"
-                      className="font-medium text-slate-700 dark:text-slate-300"
-                    >
-                      I agree to the{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Terms of Service
-                      </a>{" "}
-                      and{" "}
-                      <a href="#" className="text-primary hover:underline">
-                        Privacy Policy
-                      </a>
-                    </Label>
-                  </div>
-                </div>
-                {errors.termsAgreed && (
-                  <p className="text-sm text-red-500">You must agree to the terms</p>
                 )}
               </div>
               
               {/* Form Actions */}
-              <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 sm:justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                >
-                  Cancel
-                </Button>
-                
+              <div className="flex flex-col md:flex-row gap-3 pt-4">
                 <Button
                   type="submit"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white"
+                  style={config.branding.primaryColor ? { 
+                    backgroundColor: config.branding.primaryColor,
+                    borderColor: config.branding.primaryColor
+                  } : {}}
                   disabled={isSubmitting}
-                  className="bg-primary-600 hover:bg-primary-700"
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="spinner inline-block w-4 h-4 border-2 border-white border-t-transparent mr-2"></span>
+                      <div className="w-4 h-4 border-2 border-white border-opacity-50 spinner mr-2"></div>
                       Processing...
                     </>
                   ) : (
-                    "Authorize"
+                    config.submitButtonText || "Authorize"
                   )}
                 </Button>
+                <Button
+                  type="button"
+                  className="flex-1 bg-transparent border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  {config.cancelButtonText || "Cancel"}
+                </Button>
               </div>
-              
-              {/* Submission Status Messages */}
-              {status !== "idle" && (
-                <div className="mt-4">
-                  {status === "success" ? (
-                    <Alert className="bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 dark:text-green-400" />
-                      <AlertDescription>
-                        Authorization successful! Redirecting...
-                      </AlertDescription>
-                    </Alert>
-                  ) : (
-                    <Alert className="bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800">
-                      <AlertCircle className="h-4 w-4 text-red-500 dark:text-red-400" />
-                      <AlertDescription>
-                        {errorMessage}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              )}
             </form>
-            
-            {/* Footer */}
-            <div className="mt-8 text-center">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Secured by <span className="font-medium">{branding.serviceProvider}</span> •{" "}
-                <a href="#" className="text-primary hover:underline">
-                  Need help?
-                </a>
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
