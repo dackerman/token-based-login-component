@@ -1,0 +1,46 @@
+{
+  "name": "oauth-consent-screen",
+  "version": "1.0.0",
+  "description": "A customizable OAuth-style consent screen with API token input and branding options",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.279.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "rollup": "^3.20.0",
+    "rollup-plugin-typescript2": "^0.34.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.2"
+  },
+  "keywords": [
+    "react",
+    "oauth",
+    "consent",
+    "api",
+    "authentication",
+    "token",
+    "shadcn"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/oauth-consent-screen"
+  }
+}

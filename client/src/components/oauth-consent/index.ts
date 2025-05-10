@@ -1,4 +1,5 @@
 // OAuth Consent Screen Component Library
+import './styles.css';
 
 // Export the main component
 export { ConsentScreen } from './ConsentScreen';
