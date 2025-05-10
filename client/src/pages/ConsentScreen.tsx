@@ -32,6 +32,16 @@ type RegionOption = {
   label: string;
 };
 
+type ApiKeyInstructionConfig = {
+  show: boolean;
+  title?: string;
+  steps?: Array<{
+    text: string;
+    url?: string;
+  }>;
+  additionalInfo?: string;
+};
+
 type ConsentScreenConfig = {
   branding: BrandingConfig;
   apiTokenLabel?: string;
@@ -48,6 +58,7 @@ type ConsentScreenConfig = {
   showRegionSelector?: boolean;
   showApiVersionField?: boolean;
   showTimeoutField?: boolean;
+  apiKeyInstructions?: ApiKeyInstructionConfig;
   customStyles?: {
     cardWidth?: string;
     borderRadius?: string;
@@ -81,6 +92,26 @@ const defaultConfig: ConsentScreenConfig = {
   showRegionSelector: true,
   showApiVersionField: true,
   showTimeoutField: true,
+  apiKeyInstructions: {
+    show: true,
+    title: "How to get your API token",
+    steps: [
+      {
+        text: "Log in to your account dashboard",
+        url: "https://example.com/dashboard"
+      },
+      {
+        text: "Navigate to API Settings in your profile"
+      },
+      {
+        text: "Click on 'Generate New Token' and set permissions"
+      },
+      {
+        text: "Copy the token and paste it here"
+      }
+    ],
+    additionalInfo: "Your token will not be stored anywhere and is only used to authenticate this request."
+  },
   customStyles: {
     cardWidth: "max-w-md",
     borderRadius: "rounded-xl",
@@ -109,7 +140,27 @@ const demoConfig: ConsentScreenConfig = {
   defaultTheme: 'dark',
   submitButtonText: "Connect",
   cancelButtonText: "Decline",
-  showApiVersionField: true
+  showApiVersionField: true,
+  apiKeyInstructions: {
+    show: true,
+    title: "How to generate your Access Key",
+    steps: [
+      {
+        text: "Log in to the Developer Portal",
+        url: "https://dev.example.com/login"
+      },
+      {
+        text: "Go to 'Account Settings' → 'API Access'"
+      },
+      {
+        text: "Click 'Create New Key' and select the required permissions"
+      },
+      {
+        text: "Give your key a name (e.g. 'Development') and click 'Generate'"
+      }
+    ],
+    additionalInfo: "For security reasons, your key will only be shown once during generation. Store it safely."
+  }
 };
 
 export default function ConsentScreen() {
@@ -208,7 +259,7 @@ export default function ConsentScreen() {
     setStatus("idle");
     
     // Simulate API request
-    setTimeout(() => {
+    window.setTimeout(() => {
       // Simulate 70% success rate for demo
       const isSuccess = Math.random() > 0.3;
       
@@ -217,7 +268,7 @@ export default function ConsentScreen() {
       if (isSuccess) {
         setStatus("success");
         // Reset form after 2 seconds on success
-        setTimeout(() => {
+        window.setTimeout(() => {
           // In a real app, this would redirect to another page
           setStatus("idle");
           resetForm();
@@ -413,6 +464,41 @@ export default function ConsentScreen() {
                 </div>
                 {errors.apiToken && (
                   <p className="text-sm text-red-500">API token is required</p>
+                )}
+                
+                {/* API Key Instructions */}
+                {config.apiKeyInstructions?.show && (
+                  <div className="mt-3 text-sm bg-blue-50 dark:bg-blue-900/20 rounded-md p-3 border border-blue-100 dark:border-blue-900/50">
+                    <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2">
+                      {config.apiKeyInstructions.title || "How to get your API token"}
+                    </h4>
+                    {config.apiKeyInstructions.steps && (
+                      <ol className="list-decimal pl-5 text-slate-700 dark:text-slate-300 space-y-1">
+                        {config.apiKeyInstructions.steps.map((step, index) => (
+                          <li key={index}>
+                            {step.url ? (
+                              <a 
+                                href={step.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                                style={config.branding.primaryColor ? { color: config.branding.primaryColor } : {}}
+                              >
+                                {step.text}
+                              </a>
+                            ) : (
+                              step.text
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                    {config.apiKeyInstructions.additionalInfo && (
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 italic">
+                        {config.apiKeyInstructions.additionalInfo}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
               
